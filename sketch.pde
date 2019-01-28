@@ -3,10 +3,12 @@
 
 // permission: WRITE_EXTERNAL_STORAGE
 public String getPath(){
-  return android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DCIM).getParentFile().getAbsolutePath() + "/CODING/static";
+  return android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DCIM).getParentFile().getAbsolutePath()
+   + "/trappedKnight/" + name;
 }
 
 float[][] moves;
+String name;
 
 void setup(){
   //fullScreen();
@@ -16,19 +18,59 @@ void setup(){
   fill(255);
   stroke(255);
   
-  speed = 4096 / 24;
+  name = "config.txt"; // this is cuz the act name is set after the config is loaded so I can use this
+  String[] data = null;
+  try{data = loadStrings(getPath());} catch(Exception e){}
+  if(data == null){
+    data = new String[]{
+      "speed: 8",
+      "xStart: 0",
+      "yStart: 0",
+      "name: trappedKnight",
+      "maxMoves: -1",
+      "moves: ...?"
+    };
+    saveStrings(getPath(), data);
+  }
   
-  x = new float[] { 0 };
-  y = new float[] { 0 };
+  HashMap<String, String> vars = getVars(data);
+  
+  
+  
+  speed = Float.parseFloat(vars.get("speed"));
+  
+  float xStart = Float.parseFloat(vars.get("xStart"));
+  float yStart = Float.parseFloat(vars.get("yStart"));
+  
+  x = new float[] { xStart };
+  y = new float[] { yStart };
   
   size = 1;
   
   moves = getMoves();
   
+  series = new float[] { planeNum(x[0], y[0]) };
   
   
+  /*
+    // TODO to load:
+    name eZ
+    moves eZ
+    plane how the heck? maybe names -> function...
+    speed eZ
+    
+    maybe a slider for speed?
+    maybe max moves eZ
+    
+    maybe also start coords eZ...
+  */
+  
+  name = vars.get("name");
+  maxMoves = Integer.parseInt(vars.get("maxMoves"));
   
 }
+
+int maxMoves;
 
 float[] x, y;
 float size;
@@ -36,6 +78,8 @@ float size;
 float speed;
 
 boolean stop;
+
+float[] series;
 
 void draw(){
   if(stop){
@@ -55,13 +99,7 @@ void draw(){
   }
   
   
-  //text(size + " " + x.length, 0, 0);
   
-  
-  if(frameCount == 24){
-    saveFrame(getPath() + "/icon.png");
-    stop = true;
-  }
 }
 
 
@@ -74,11 +112,28 @@ public void doIteration(){
   } else if(frameCount % (1.0 / speed) < 1){
     nevMove();
   }
+  
+  if(stop){
+    
+    
+    String[] info = new String[series.length];
+    for(int i = 0; i < info.length; i ++){
+      info[i] = "n(" + i + ") = " + intify(series[i]);
+    }
+    saveStrings(getPath() + ".txt", info);
+    saveFrame(getPath() + ".png");
+  }
 }
 
 
 public void nevMove(){
+  if(maxMoves > -1 && x.length >= maxMoves){
+    stop = true;
+  }
   float[] nev = tryMoves(x[x.length - 1], y[y.length - 1]);
+  if(stop){
+    return;
+  }
   x = append(x, nev[0]);
   y = append(y, nev[1]);
   if(abs(nev[0]) > size * 1.0){
@@ -88,3 +143,5 @@ public void nevMove(){
     size = abs(nev[1]);
   }
 }
+
+

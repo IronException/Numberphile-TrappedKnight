@@ -1,9 +1,38 @@
 
 
-public float planeNum(float x, float y){
-  return x * x + y * y;
+
+public String intify(float num){
+  String rV = num + "";
+  try{
+    if(rV.split("\\.")[1].equals("0")){
+      rV = rV.split("\\.")[0];
+    }
+  } catch(Exception e){}
+  return rV;
 }
 
+public float planeNum(float x, float y){
+  x *= -1;
+  y *= 1;
+  float a = abs(abs(x) - abs(y)) + abs(x) + abs(y);
+  float rV = a * a + (a + x - y) * sign(x + y + 0.1) + 1.0;
+
+  //rV =  x * x + y * y;
+  
+  return rV;
+}
+
+public float sign(float in){
+  if(in < 0){
+    return -1;
+  } else if(in > 0){
+    return 1;
+  }
+  return in; // cuz if 0 its 0
+}
+
+
+// to here add to git/AllApi... // TODO
 
 public float[][] getMoves(){
   return new float[][]{
@@ -21,7 +50,7 @@ public float[][] getMoves(){
   };
 }
 
-public float[] tryMoves(float x, float y){
+public float[] tryMoves(float xP, float yP){
   
   float xShift, yShift, shiftNum = Float.MAX_VALUE;
   xShift = 0;
@@ -30,8 +59,8 @@ public float[] tryMoves(float x, float y){
   xCur = 0;
   yCur = 0;
   for(int i = 0; i < moves.length; i ++){
-    xCur = x + moves[i][0];
-    yCur = y + moves[i][1];
+    xCur = xP + moves[i][0];
+    yCur = yP + moves[i][1];
     if(!isAlreadyTaken(xCur, yCur)){
       sCur = planeNum(xCur, yCur);
       if(isBetter(shiftNum, sCur)){
@@ -46,6 +75,8 @@ public float[] tryMoves(float x, float y){
   }
   if(shiftNum == Float.MAX_VALUE){
     stop = true;
+  } else {
+    series = append(series, (int) shiftNum);
   }
   
   return new float[] { xShift, yShift };
@@ -67,3 +98,35 @@ public boolean isAlreadyTaken(float xC, float yC){
   }
   return false;
 }
+
+
+/*
+  
+  
+  formula:
+  A=||x|−|y||+|x|+|y|;
+
+R=A2+(A+x−y)sgn(x+y+0.1)+1;
+
+x,y∈Z
+
+float a = abs(abs(x) - abs(y)) + abs(x) + abs(y);
+float rV = a * a + (a + x - y) * sign(x + y + 0.1) + 1.0;
+
+from https://math.stackexchange.com/questions/163080/on-a-two-dimensional-grid-is-there-a-formula-i-can-use-to-spiral-coordinates-in
+  
+*/
+
+
+public HashMap<String, String> getVars(String[] data){
+  HashMap<String, String> rV = new HashMap<String, String>();
+  String[] sp;
+  for(int i = 0; i < data.length; i ++){
+    sp = data[i].split(": ");
+    try{
+      rV.put(sp[0], sp[1]);
+    } catch(Exception e){}
+  }
+  return rV;
+}
+
