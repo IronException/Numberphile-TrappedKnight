@@ -14,7 +14,9 @@ void setup(){
   //fullScreen();
   size(1080, 1080);
   
-  background(0);
+  
+  textSize(height / 32.0);
+  
   fill(255);
   stroke(255);
   
@@ -28,14 +30,36 @@ void setup(){
       "yStart: 0",
       "name: trappedKnight",
       "maxMoves: -1",
-      "moves: ...?"
+      "background: " + color(0),
+      "pos: [0, 100]",
+      "cols: ["
+        + color(64) + ", "
+        + color(255) + "]",
+      "moves: [(1/2), "
+        + "(-1/2), "
+        + "(-2/-1), "
+        + "(-2/1), "
+        + "(2/1), "
+        + "(2/-1), "
+        + "(-1/-2), "
+        + "(1/-2), "
+        + "(0/0)]"
     };
     saveStrings(getPath(), data);
   }
   
+  
+  
   HashMap<String, String> vars = getVars(data);
   
+  bgCol = Integer.parseInt(vars.get("background"));
+  frontCol = color(255 - red(bgCol), 255 - green(bgCol), 255 - blue(bgCol));
   
+  println(frontCol + " " + color(255));
+  background(bgCol);
+  
+  pos = getPos(vars.get("pos"));
+  cols = getCols(vars.get("cols"));
   
   speed = Float.parseFloat(vars.get("speed"));
   
@@ -47,7 +71,8 @@ void setup(){
   
   size = 1;
   
-  moves = getMoves();
+  moves = getMoves(vars.get("moves"));
+  
   
   series = new float[] { planeNum(x[0], y[0]) };
   
@@ -70,6 +95,10 @@ void setup(){
   
 }
 
+int biggest = 0;
+
+int bgCol, frontCol;
+
 int maxMoves;
 
 float[] x, y;
@@ -81,18 +110,39 @@ boolean stop;
 
 float[] series;
 
+
+float[] pos;
+int[] cols;
+
+
 void draw(){
   if(stop){
     return;
   }
-  background(0);
+  background(bgCol);
   doIteration();
+  
+  
+  fill(frontCol);
+  String txt = "last: n(" + (series.length - 1) + ") = " + intify(series[series.length - 1])
+    + "  (" + intify(x[series.length - 1]) + "/" + intify(y[series.length - 1]) + ")";
+  text(txt, textAscent(), 2.0 * textAscent());
+  
+  txt = "biggest: n(" + biggest + ") = " + intify(series[biggest])
+    + "  (" + intify(x[biggest]) + "/" + intify(y[biggest]) + ")";
+  text(txt, textAscent(), 4.0 * textAscent());
+  
+  
   
   translate(width / 2.0, height / 2.0);
   float scale = (width / 2.0) / size;
   float xLast = x[0] * scale;
   float yLast = y[0] * scale;
+  float val;
   for(int i = 1; i < x.length; i ++){
+    val = i * 100.0 / x.length;
+    
+    stroke(convertColor(val, pos, cols));
     line(x[i] * scale, y[i] * scale, xLast, yLast);
     xLast = x[i] * scale;
     yLast = y[i] * scale;
@@ -115,13 +165,8 @@ public void doIteration(){
   
   if(stop){
     
+    lastAction();
     
-    String[] info = new String[series.length];
-    for(int i = 0; i < info.length; i ++){
-      info[i] = "n(" + i + ") = " + intify(series[i]);
-    }
-    saveStrings(getPath() + ".txt", info);
-    saveFrame(getPath() + ".png");
   }
 }
 
@@ -142,6 +187,19 @@ public void nevMove(){
   if(abs(nev[1]) > size * 1.0){
     size = abs(nev[1]);
   }
+  
+  
+  if(planeNum(nev[0], nev[1]) > planeNum(x[biggest], y[biggest])){
+    biggest = series.length - 1;
+  }
 }
 
-
+public void lastAction(){
+  String[] info = new String[series.length];
+    for(int i = 0; i < info.length; i ++){
+      info[i] = "n(" + i + ") = " + intify(series[i]);
+    }
+    saveStrings(getPath() + ".txt", info);
+    saveFrame(getPath() + ".png");
+    
+}
