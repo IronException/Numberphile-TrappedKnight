@@ -14,6 +14,11 @@ public String intify(float num){
 public float planeNum(float x, float y){
   x *= -1;
   y *= 1;
+  
+  float zw = x;
+  x = y;
+  y = zw;
+  
   float a = abs(abs(x) - abs(y)) + abs(x) + abs(y);
   float rV = a * a + (a + x - y) * sign(x + y + 0.1) + 1.0;
 
@@ -34,7 +39,23 @@ public float sign(float in){
 
 // to here add to git/AllApi... // TODO
 
-public float[][] getMoves(){
+public float[][] getMoves(String moves){
+  //moves = moves.substring(1, moves.length() - 2);
+  
+  String[] coords = moves.split("\\), \\(");
+  coords[0] = coords[0].substring(2);
+  coords[coords.length - 1] = coords[coords.length - 1].substring(0, coords[coords.length - 1].length() - 2);
+  float[][] rV = new float[coords.length][];
+  String[] sp;
+  for(int i = 0; i < rV.length; i ++){
+    
+    sp = coords[i].split("/");
+    
+    rV[i] = new float[]{Float.parseFloat(sp[0]), Float.parseFloat(sp[1])};
+  }
+  
+  return rV;
+  /*
   return new float[][]{
     new float[]{ 1, 2 },
     new float[]{ -1, 2 },
@@ -47,7 +68,7 @@ public float[][] getMoves(){
     new float[]{ 1, -2 },
     
     new float[]{ 0, 0 }
-  };
+  };*/
 }
 
 public float[] tryMoves(float xP, float yP){
@@ -74,6 +95,8 @@ public float[] tryMoves(float xP, float yP){
     
   }
   if(shiftNum == Float.MAX_VALUE){
+    println("stopped after " + series.length);
+    
     stop = true;
   } else {
     series = append(series, (int) shiftNum);
@@ -129,4 +152,60 @@ public HashMap<String, String> getVars(String[] data){
   }
   return rV;
 }
+
+
+
+
+public float[] getPos(String in){
+  //moves = moves.substring(1, moves.length() - 2);
+  // ignore that it says coords
+  String[] coords = in.split(", ");
+  coords[0] = coords[0].substring(1);
+  coords[coords.length - 1] = coords[coords.length - 1].substring(0, coords[coords.length - 1].length() - 1);
+  float[] rV = new float[coords.length];
+  String[] sp;
+  for(int i = 0; i < rV.length; i ++){
+    
+    rV[i] = Float.parseFloat(coords[i]);
+  }
+  
+  return rV;
+}
+
+
+
+public int[] getCols(String in){
+  //moves = moves.substring(1, moves.length() - 2);
+  // ignore that it says coords
+  String[] coords = in.split(", ");
+  coords[0] = coords[0].substring(1);
+  coords[coords.length - 1] = coords[coords.length - 1].substring(0, coords[coords.length - 1].length() - 1);
+  int[] rV = new int[coords.length];
+  String[] sp;
+  for(int i = 0; i < rV.length; i ++){
+    
+    rV[i] = Integer.parseInt(coords[i]);
+  }
+  
+  return rV;
+}
+
+
+
+public int convertColor(float value, float[] pos, int[] cols){
+  for(int i = 0; i < pos.length; i ++){
+    if(value < pos[i]){
+      int down = cols[i - 1];
+      int up = cols[i];
+      float dif = (value - pos[i - 1]) / (pos[i] - pos[i - 1]);
+      
+      return color(
+        red(down) + dif * (red(up) - red(down)),
+        green(down) + dif * (green(up) - green(down)),
+        blue(down) + dif * (blue(up) - blue(down)));
+    }
+  }
+  return cols[cols.length - 1];
+}
+
 
